@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contagem Regressiva de Natal 🎄</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@300;400;600;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #02180e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0d4a2b;
+            border-radius: 4px;
+        }
+
+        /* Root Fonts & Colors */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(circle at center, #0a4025 0%, #041c10 60%, #010d08 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .title-font {
+            font-family: 'Mountains of Christmas', cursive;
+        }
+
+        .number-font {
+            font-family: 'Cinzel', serif;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fff3a1 0%, #ffd700 50%, #cca000 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .gold-glow {
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
+        }
+
+        .glass-card {
+            background: rgba(13, 56, 34, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 215, 0, 0.22);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            box-shadow: 0 12px 40px 0 rgba(255, 215, 0, 0.15);
+        }
+
+        .lightrope {
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            pointer-events: none;
+            z-index: 30;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .lightrope li {
+            position: relative;
+            animation-fill-mode: both;
+            animation-iteration-count: infinite;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: block;
+            width: 12px;
+            height: 22px;
+            border-radius: 50%;
+            margin: 15px 8px;
+            animation-name: flash-1;
+            animation-duration: 2s;
+        }
+
+        .lightrope li:before {
+            content: "";
+            position: absolute;
+            background: #222;
+            width: 10px;
+            height: 9px;
+            border-radius: 3px;
+            top: -5px;
+            left: 1px;
+        }
+
+        .lightrope li:nth-child(2n+1) {
+            animation-name: flash-2;
+            animation-duration: 0.8s;
+        }
+
+        .lightrope li:nth-child(3n+1) {
+            animation-name: flash-3;
+            animation-duration: 1.4s;
+        }
+
+        @keyframes flash-1 {
+            0%, 100% { background: #ff2a2a; box-shadow: 0px 5px 24px 3px #ff2a2a; }
+            50% { background: rgba(255, 42, 42, 0.4); box-shadow: 0px 5px 24px 3px rgba(255, 42, 42, 0.2); }
+        }
+
+        @keyframes flash-2 {
+            0%, 100% { background: #ffd700; box-shadow: 0px 5px 24px 3px #ffd700; }
+            50% { background: rgba(255, 215, 0, 0.4); box-shadow: 0px 5px 24px 3px rgba(255, 215, 0, 0.2); }
+        }
+
+        @keyframes flash-3 {
+            0%, 100% { background: #00e676; box-shadow: 0px 5px 24px 3px #00e676; }
+            50% { background: rgba(0, 230, 118, 0.4); box-shadow: 0px 5px 24px 3px rgba(0, 230, 118, 0.2); }
+        }
+
+        /* Pulse for Gift Button */
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        .pulse-btn {
+            animation: gentle-pulse 2.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="h-full flex flex-col justify-between items-center relative min-h-screen select-none">
+
+    <canvas id="snow-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <ul class="lightrope" id="lightrope">
+        <!-- Generated by JS -->
+    </ul>
+
+    <header class="w-full max-w-6xl px-4 pt-12 pb-4 z-20 flex justify-between items-center">
+        <div class="flex items-center space-x-2 bg-emerald-950/60 backdrop-blur-md px-4 py-2 rounded-full border border-emerald-500/30 text-xs sm:text-sm text-emerald-300">
+            <i class="fa-solid fa-tree text-amber-400 animate-pulse"></i>
+            <span>Natal 2026</span>
+        </div>
+
+        <!-- Music Toggle Button -->
+        <button id="music-btn" class="flex items-center space-x-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 px-4 py-2 rounded-full transition-all duration-300 cursor-pointer active:scale-95 text-xs sm:text-sm shadow-lg">
+            <i id="music-icon" class="fa-solid fa-music"></i>
+            <span id="music-text">Música de Natal</span>
+        </button>
+    </header>
+
+    <main class="w-full max-w-5xl px-4 my-auto z-10 flex flex-col items-center text-center">
+        
+        <!-- Header Titles -->
+        <div class="space-y-3 mb-8 sm:mb-12">
+            <p class="text-emerald-400 uppercase tracking-[0.25em] text-xs sm:text-sm font-semibold">
+                Contagem Regressiva Especial
+            </p>
+            <h1 class="title-font text-5xl sm:text-7xl md:text-8xl gold-gradient-text tracking-wide drop-shadow-md">
+                A Magia do Natal
+            </h1>
+            <p class="text-gray-300 max-w-lg mx-auto text-sm sm:text-base font-light px-4">
+                Sinta o encanto, a união e a esperança da época mais abençoada do ano se aproximando.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 w-full max-w-4xl mb-10 sm:mb-14">
+            
+            <!-- Dias -->
+            <div class="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center transition-all duration-300">
+                <span id="days" class="number-font text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-1">00</span>
+                <div class="flex items-center space-x-1.5 text-xs sm:text-sm uppercase tracking-wider font-semibold text-amber-400">
+                    <i class="fa-solid fa-calendar-day text-[10px]"></i>
+                    <span>Dias</span>
+                </div>
+            </div>
+
+            <!-- Horas -->
+            <div class="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center transition-all duration-300">
+                <span id="hours" class="number-font text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-1">00</span>
+                <div class="flex items-center space-x-1.5 text-xs sm:text-sm uppercase tracking-wider font-semibold text-amber-400">
+                    <i class="fa-solid fa-clock text-[10px]"></i>
+                    <span>Horas</span>
+                </div>
+            </div>
+
+            <!-- Minutos -->
+            <div class="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center transition-all duration-300">
+                <span id="minutes" class="number-font text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-1">00</span>
+                <div class="flex items-center space-x-1.5 text-xs sm:text-sm uppercase tracking-wider font-semibold text-amber-400">
+                    <i class="fa-solid fa-hourglass-half text-[10px]"></i>
+                    <span>Minutos</span>
+                </div>
+            </div>
+
+            <!-- Segundos -->
+            <div class="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center transition-all duration-300">
+                <span id="seconds" class="number-font text-4xl sm:text-6xl md:text-7xl font-bold text-rose-400 mb-1">00</span>
+                <div class="flex items-center space-x-1.5 text-xs sm:text-sm uppercase tracking-wider font-semibold text-rose-400">
+                    <i class="fa-solid fa-bolt text-[10px]"></i>
+                    <span>Segundos</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
+            <button id="open-gift-btn" class="pulse-btn w-full sm:w-auto flex-1 flex items-center justify-center space-x-3 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-semibold py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-red-900/50 transition-all duration-300 border border-rose-400/40 cursor-pointer text-sm sm:text-base">
+                <i class="fa-solid fa-gift text-lg text-amber-300 animate-bounce"></i>
+                <span>Abrir Presente Surpresa</span>
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="w-full max-w-6xl px-4 py-6 z-20 text-center text-xs sm:text-sm text-emerald-300/70 border-t border-emerald-900/50 mt-8">
+        <p class="flex items-center justify-center gap-2">
+            <span>Desenvolvido com carinho para celebrar o Natal</span>
+            <i class="fa-solid fa-heart text-red-500 text-xs"></i>
+        </p>
+    </footer>
+
+    <div id="gift-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+        <div id="modal-card" class="glass-card bg-gradient-to-b from-emerald-900/90 to-emerald-950/90 border border-amber-400/50 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center transform scale-90 transition-all duration-300 relative shadow-2xl">
+            
+            <!-- Close Button -->
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-emerald-300/70 hover:text-white text-lg w-8 h-8 rounded-full bg-emerald-950/50 flex items-center justify-center border border-emerald-500/20 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="w-16 h-16 mx-auto mb-4 bg-amber-500/20 rounded-full border border-amber-400/40 flex items-center justify-center text-amber-300 text-2xl">
+                <i class="fa-solid fa-star"></i>
+            </div>
+
+            <h3 class="title-font text-3xl text-amber-300 mb-3">Mensagem do Dia</h3>
+            
+            <p id="gift-quote" class="text-gray-200 text-sm sm:text-base leading-relaxed italic mb-6">
+                "Que a paz e a esperança do Natal iluminem o seu caminho e tragam momentos inesquecíveis para você e sua família."
+            </p>
+
+            <div class="flex flex-col gap-2">
+                <button id="another-quote-btn" class="w-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 py-2.5 rounded-xl font-medium transition-all cursor-pointer text-sm">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Outra Mensagem
+                </button>
+                <button id="close-modal-btn-2" class="w-full bg-emerald-800/40 hover:bg-emerald-800/60 text-emerald-200 py-2.5 rounded-xl font-medium transition-all cursor-pointer text-sm">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Top Christmas String Lights Generator ---
+        const lightrope = document.getElementById('lightrope');
+        const bulbCount = Math.floor(window.innerWidth / 35);
+        for (let i = 0; i < bulbCount; i++) {
+            const li = document.createElement('li');
+            lightrope.appendChild(li);
+        }
+
+        // --- 2. Precision Christmas Countdown Timer ---
+        function updateCountdown() {
+            const now = new Date();
+            let currentYear = now.getFullYear();
+            
+            // Christmas Date (Month 11 = December)
+            let christmasDate = new Date(currentYear, 11, 25, 0, 0, 0);
+
+            // If Christmas has passed this year, count for next year
+            if (now > christmasDate) {
+                christmasDate = new Date(currentYear + 1, 11, 25, 0, 0, 0);
+            }
+
+            const diff = christmasDate - now;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('days').innerText = days.toString().padStart(2, '0');
+            document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
+
+            // Trigger confetti if exactly Christmas morning!
+            if (diff <= 1000 && diff > 0) {
+                triggerConfetti();
+            }
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+
+        // --- 3. Interactive Falling Snow & Bokeh Canvas Effect ---
+        const canvas = document.getElementById('snow-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let snowflakes = [];
+        let bokehParticles = [];
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Snowflake {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * -height;
+                this.radius = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 1.5 + 0.5;
+                this.speedX = Math.random() * 0.8 - 0.4;
+                this.opacity = Math.random() * 0.6 + 0.3;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX + Math.sin(this.y / 40) * 0.3;
+
+                if (this.y > height) {
+                    this.reset();
+                    this.y = -10;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        class Bokeh {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.radius = Math.random() * 40 + 20;
+                this.speedY = (Math.random() - 0.5) * 0.2;
+                this.opacity = Math.random() * 0.08 + 0.02;
+                this.color = Math.random() > 0.5 ? '255, 215, 0' : '0, 230, 118';
+            }
+
+            update() {
+                this.y += this.speedY;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        // Generate particles based on screen size
+        const snowCount = Math.min(Math.floor(width / 8), 120);
+        for (let i = 0; i < snowCount; i++) snowflakes.push(new Snowflake());
+        for (let i = 0; i < 15; i++) bokehParticles.push(new Bokeh());
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+
+            bokehParticles.forEach(b => {
+                b.update();
+                b.draw();
+            });
+
+            snowflakes.forEach(s => {
+                s.update();
+                s.draw();
+            });
+
+            requestAnimationFrame(animateCanvas);
+        }
+
+        animateCanvas();
+
+
+        // --- 4. Web Audio API Synthesizer (Jingle Bells Melody) ---
+        let audioCtx = null;
+        let isPlaying = false;
+        let melodyInterval = null;
+
+        const jingleBellsNotes = [
+            // Note, Duration (ms)
+            { note: 'E4', duration: 250 }, { note: 'E4', duration: 250 }, { note: 'E4', duration: 500 },
+            { note: 'E4', duration: 250 }, { note: 'E4', duration: 250 }, { note: 'E4', duration: 500 },
+            { note: 'E4', duration: 250 }, { note: 'G4', duration: 250 }, { note: 'C4', duration: 350 }, { note: 'D4', duration: 150 },
+            { note: 'E4', duration: 800 },
+            { note: 'F4', duration: 250 }, { note: 'F4', duration: 250 }, { note: 'F4', duration: 350 }, { note: 'F4', duration: 150 },
+            { note: 'F4', duration: 250 }, { note: 'E4', duration: 250 }, { note: 'E4', duration: 250 }, { note: 'E4', duration: 150 }, { note: 'E4', duration: 150 },
+            { note: 'E4', duration: 250 }, { note: 'D4', duration: 250 }, { note: 'D4', duration: 250 }, { note: 'E4', duration: 250 },
+            { note: 'D4', duration: 500 }, { note: 'G4', duration: 500 }
+        ];
+
+        const noteFrequencies = {
+            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00
+        };
+
+        function playTone(freq, duration) {
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            // Warm bell-like sound using sine + harmonic blend
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration / 1000));
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + (duration / 1000));
+        }
+
+        function startMusic() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            let noteIndex = 0;
+            isPlaying = true;
+
+            function playNextNote() {
+                if (!isPlaying) return;
+                const current = jingleBellsNotes[noteIndex];
+                playTone(noteFrequencies[current.note], current.duration);
+
+                noteIndex = (noteIndex + 1) % jingleBellsNotes.length;
+                melodyInterval = setTimeout(playNextNote, current.duration + 50);
+            }
+
+            playNextNote();
+            
+            document.getElementById('music-icon').className = 'fa-solid fa-volume-high text-green-400 animate-pulse';
+            document.getElementById('music-text').innerText = 'Tocando Música';
+        }
+
+        function stopMusic() {
+            isPlaying = false;
+            if (melodyInterval) clearTimeout(melodyInterval);
+            document.getElementById('music-icon').className = 'fa-solid fa-music';
+            document.getElementById('music-text').innerText = 'Música de Natal';
+        }
+
+        document.getElementById('music-btn').addEventListener('click', () => {
+            if (isPlaying) {
+                stopMusic();
+            } else {
+                startMusic();
+            }
+        });
+
+
+        // --- 5. Interactive Gift Modal & Inspirational Quotes ---
+        const christmasQuotes = [
+            "Que a luz do Natal ilumine o seu lar com paz, saúde, harmonia e muito amor!",
+            "O maior presente de Natal é a presença daqueles que amamos ao nosso lado.",
+            "Que a magia deste Natal transforme todos os seus sonhos em realidade!",
+            "Natal é tempo de renovação, perdão, esperança e gratidão pelas bênçãos do ano.",
+            "Que o espírito natalino traga sorrisos sinceros e aconchego ao seu coração.",
+            "A melhor mensagem de Natal é aquela que sai em silêncio do nosso coração e aquece com carinho a vida de quem amamos.",
+            "Que a estrela de Natal brilhe forte na sua vida durante todo o ano que vai chegar!"
+        ];
+
+        const giftModal = document.getElementById('gift-modal');
+        const modalCard = document.getElementById('modal-card');
+        const giftQuote = document.getElementById('gift-quote');
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ffd700', '#e63946', '#2a9d8f', '#ffffff']
+                });
+            }
+        }
+
+        function openModal() {
+            showRandomQuote();
+            giftModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalCard.classList.remove('scale-90');
+            modalCard.classList.add('scale-100');
+            triggerConfetti();
+        }
+
+        function closeModal() {
+            giftModal.classList.add('opacity-0', 'pointer-events-none');
+            modalCard.classList.remove('scale-100');
+            modalCard.classList.add('scale-90');
+        }
+
+        function showRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * christmasQuotes.length);
+            giftQuote.innerText = `"${christmasQuotes[randomIndex]}"`;
+        }
+
+        document.getElementById('open-gift-btn').addEventListener('click', openModal);
+        document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+        document.getElementById('close-modal-btn-2').addEventListener('click', closeModal);
+        document.getElementById('another-quote-btn').addEventListener('click', () => {
+            showRandomQuote();
+            triggerConfetti();
+        });
+
+        giftModal.addEventListener('click', (e) => {
+            if (e.target === giftModal) closeModal();
+        });
+    </script>
+</body>
+</html>
