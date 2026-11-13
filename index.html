@@ -1,557 +1,565 @@
-<!DOCTYPE html>
-<html lang="pt-BR" class="h-full">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contagem Regressiva de Natal 🎄</title>
+<title>Contagem regressiva de Natal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=VT323&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: coluna única centralizada sob duas fileiras de pisca-pisca; relógio digital, presente surpresa e rádio de música em sequência.
+     Visual: noite de inverno, números âmbar de display de 7 segmentos, luzes coloridas dos anos 90. Tema escuro único, por escolha. */
+  :root{
+    color-scheme: dark;
+    --ground:#0a1a2b;
+    --ground-2:#0f2a40;
+    --panel:#12324b;
+    --panel-2:#0e2840;
+    --line:rgba(190,225,240,.14);
+    --text:#eaf3f1;
+    --muted:#a3bcc1;
+    --gold:#f0c35a;
+    --berry:#d9504b;
+    --berry-deep:#a9332f;
+    --pine:#2f8f5b;
+    --ice:#6bb6e6;
+    --font-display:'Mountains of Christmas', 'Georgia', serif;
+    --font-body:'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-digits:'VT323', 'Courier New', monospace;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ min-height:100%; }
+  body{
+    margin:0;
+    padding-block:8px 28px;
+    padding-left:max(16px, env(safe-area-inset-left, 0px));
+    padding-right:max(16px, env(safe-area-inset-right, 0px));
+    background-color:var(--ground);
+    background-image:radial-gradient(ellipse at 50% -8%, var(--ground-2) 0%, var(--ground) 62%);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@300;400;600;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  .strand{ width:100%; max-width:920px; margin:0 auto; }
+  .strand svg{ display:block; width:100%; height:auto; }
+  .bulb{ animation:twinkle 2.6s ease-in-out infinite; }
+  .bulb:nth-of-type(3n){ animation-delay:.3s; }
+  .bulb:nth-of-type(4n){ animation-delay:.9s; }
+  .bulb:nth-of-type(5n){ animation-delay:1.4s; }
+  .bulb:nth-of-type(7n){ animation-delay:1.9s; }
+  @keyframes twinkle{
+    0%,100%{ opacity:.45; filter:drop-shadow(0 0 2px currentColor); }
+    50%{ opacity:1; filter:drop-shadow(0 0 8px currentColor) drop-shadow(0 0 16px currentColor); }
+  }
 
-    <!-- Canvas Confetti Library -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  main{
+    width:100%;
+    max-width:760px;
+    margin:0 auto;
+    padding-block:22px 18px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:0;
+  }
 
-    <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #02180e;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #0d4a2b;
-            border-radius: 4px;
-        }
+  .eyebrow{ margin:0; font-size:.9rem; font-weight:500; letter-spacing:.06em; text-transform:uppercase; color:var(--ice); }
+  h1{
+    margin:4px 0 10px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(2.3rem, 8.5vw, 4.2rem);
+    line-height:1.05;
+    text-wrap:balance;
+    text-shadow:0 0 24px rgba(240,195,90,.28);
+  }
+  .subline{ margin:0 0 26px; max-width:44ch; color:var(--muted); text-wrap:pretty; }
+  .subline strong{ color:var(--gold); font-weight:600; }
 
-        /* Root Fonts & Colors */
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: radial-gradient(circle at center, #0a4025 0%, #041c10 60%, #010d08 100%);
-            color: #ffffff;
-            overflow-x: hidden;
-        }
+  /* ---------- relógio ---------- */
+  .clock{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:clamp(8px, 2.4vw, 18px);
+    margin-top:4px;
+  }
+  .unit{
+    min-width:0;
+    padding:clamp(14px, 4vw, 26px) 4px clamp(10px, 2.6vw, 16px);
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid rgba(240,195,90,.35);
+    border-radius:16px;
+    box-shadow:0 0 0 1px rgba(240,195,90,.06), 0 0 34px rgba(240,195,90,.14), 0 14px 30px rgba(0,0,0,.4);
+  }
+  .num{
+    font-family:var(--font-digits);
+    font-size:clamp(3.4rem, 15vw, 7rem);
+    line-height:.95;
+    color:var(--gold);
+    text-shadow:0 0 12px rgba(240,195,90,.6), 0 0 34px rgba(240,195,90,.3);
+    font-variant-numeric:tabular-nums;
+  }
+  .label{ font-size:clamp(.66rem, 2vw, .85rem); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+  .arrived{
+    margin:0 0 14px;
+    font-family:var(--font-display);
+    font-size:clamp(2.2rem, 8vw, 3.4rem);
+    color:var(--berry);
+    text-shadow:0 0 24px rgba(217,80,75,.5);
+  }
 
-        .title-font {
-            font-family: 'Mountains of Christmas', cursive;
-        }
+  /* ---------- presente surpresa ---------- */
+  .gift-zone{
+    width:100%;
+    margin-top:34px;
+    padding:22px 16px 20px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:18px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  .gift-title{ margin:0; font-family:var(--font-display); font-size:1.7rem; line-height:1.1; }
+  .gift-hint{ margin:0; font-size:.85rem; color:var(--muted); }
+  .gift-stage{ position:relative; width:148px; height:136px; }
+  .gift{
+    -webkit-appearance:none; appearance:none;
+    position:relative; display:block;
+    width:100%; height:100%;
+    padding:0; border:0; background:transparent; cursor:pointer;
+    border-radius:16px;
+  }
+  .gift:focus-visible{ outline:2px solid var(--ice); outline-offset:4px; }
+  .gift svg{ width:100%; height:100%; display:block; overflow:visible; }
+  .gift .lid{ transform-origin:22px 58px; transition:transform .45s cubic-bezier(.3,1.4,.5,1); }
+  .gift .glow{ opacity:0; transition:opacity .4s ease; }
+  .gift.open .lid{ transform:translate(6px,-30px) rotate(-16deg); }
+  .gift.open .glow{ opacity:1; }
+  .gift:not(.open):hover .lid, .gift:not(.open):focus-visible .lid{ transform:translateY(-4px); }
+  .gift.wiggle svg{ animation:wiggle .5s ease; }
+  @keyframes wiggle{
+    0%,100%{ transform:rotate(0); }
+    25%{ transform:rotate(-4deg); }
+    75%{ transform:rotate(4deg); }
+  }
+  .spark{
+    position:absolute; left:50%; top:46%;
+    width:8px; height:8px; margin:-4px 0 0 -4px;
+    border-radius:50%;
+    pointer-events:none;
+    animation:spark .9s ease-out forwards;
+  }
+  @keyframes spark{
+    from{ transform:translate(0,0) scale(1); opacity:1; }
+    to{ transform:translate(var(--dx), var(--dy)) scale(.2); opacity:0; }
+  }
+  .phrase{
+    margin:4px 0 0;
+    min-height:5.2em;
+    width:100%;
+    max-width:44ch;
+    padding:14px 16px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    font-size:1.02rem;
+    line-height:1.5;
+    text-wrap:pretty;
+  }
+  .phrase.is-new{ animation:rise .5s ease both; }
+  @keyframes rise{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+  .gift-count{ margin:0; font-size:.78rem; color:var(--muted); font-variant-numeric:tabular-nums; }
 
-        .number-font {
-            font-family: 'Cinzel', serif;
-        }
+  /* ---------- rádio ---------- */
+  .radio{
+    width:100%;
+    margin-top:18px;
+    padding:12px 16px;
+    display:flex; flex-wrap:wrap; align-items:center; gap:12px 14px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:16px;
+    text-align:left;
+  }
+  .switch{
+    -webkit-appearance:none; appearance:none;
+    flex:none; position:relative; width:56px; height:32px;
+    border:0; border-radius:999px; background:var(--panel); cursor:pointer;
+    transition:background .25s ease;
+  }
+  .switch::after{
+    content:''; position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%;
+    background:var(--text); transition:transform .25s ease, background .25s ease;
+  }
+  .switch[aria-checked="true"]{ background:var(--pine); }
+  .switch[aria-checked="true"]::after{ transform:translateX(24px); background:var(--gold); }
+  .switch:focus-visible, .next:focus-visible{ outline:2px solid var(--ice); outline-offset:3px; }
+  .radio-text{ flex:1 1 150px; min-width:0; }
+  .radio-title{ margin:0; font-size:.92rem; font-weight:600; }
+  .radio-status{ margin:0; font-size:.8rem; color:var(--muted); overflow-wrap:anywhere; }
+  .next{
+    -webkit-appearance:none; appearance:none;
+    flex:none; padding:8px 14px;
+    border:1px solid var(--line); border-radius:999px;
+    background:var(--panel); color:var(--text);
+    font-family:var(--font-body); font-size:.82rem; font-weight:500; cursor:pointer;
+  }
+  .next:hover{ background:var(--ground-2); }
 
-        .gold-gradient-text {
-            background: linear-gradient(135deg, #fff3a1 0%, #ffd700 50%, #cca000 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        }
+  @media (prefers-reduced-motion: reduce){
+    .bulb{ animation:none; opacity:.9; }
+    .gift .lid, .gift .glow, .switch, .switch::after{ transition:none; }
+    .gift.wiggle svg, .phrase.is-new{ animation:none; }
+  }
+</style>
 
-        .gold-glow {
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
-        }
+<div class="strand" id="lightsTop" aria-hidden="true"></div>
 
-        .glass-card {
-            background: rgba(13, 56, 34, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 215, 0, 0.22);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
-        }
+<main>
+  <p class="eyebrow">Faltam até 00:00 de 25/12</p>
+  <h1>Contagem regressiva de Natal</h1>
+  <p class="subline">Enquanto o dia 25 de dezembro não chega, ligue a música e abra um presente surpresa.</p>
 
-        .glass-card:hover {
-            border-color: rgba(255, 215, 0, 0.5);
-            box-shadow: 0 12px 40px 0 rgba(255, 215, 0, 0.15);
-        }
+  <div class="clock" id="clock" role="timer" aria-label="Tempo restante para o Natal">
+    <div class="unit"><div class="num" id="dd">00</div><div class="label">dias</div></div>
+    <div class="unit"><div class="num" id="hh">00</div><div class="label">horas</div></div>
+    <div class="unit"><div class="num" id="mm">00</div><div class="label">minutos</div></div>
+    <div class="unit"><div class="num" id="ss">00</div><div class="label">segundos</div></div>
+  </div>
+  <p class="arrived" id="arrived" hidden>Feliz Natal!</p>
 
-        .lightrope {
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            padding: 0;
-            pointer-events: none;
-            z-index: 30;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .lightrope li {
-            position: relative;
-            animation-fill-mode: both;
-            animation-iteration-count: infinite;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: block;
-            width: 12px;
-            height: 22px;
-            border-radius: 50%;
-            margin: 15px 8px;
-            animation-name: flash-1;
-            animation-duration: 2s;
-        }
-
-        .lightrope li:before {
-            content: "";
-            position: absolute;
-            background: #222;
-            width: 10px;
-            height: 9px;
-            border-radius: 3px;
-            top: -5px;
-            left: 1px;
-        }
-
-        .lightrope li:nth-child(2n+1) {
-            animation-name: flash-2;
-            animation-duration: 0.8s;
-        }
-
-        .lightrope li:nth-child(3n+1) {
-            animation-name: flash-3;
-            animation-duration: 1.4s;
-        }
-
-        @keyframes flash-1 {
-            0%, 100% { background: #ff2a2a; box-shadow: 0px 5px 24px 3px #ff2a2a; }
-            50% { background: rgba(255, 42, 42, 0.4); box-shadow: 0px 5px 24px 3px rgba(255, 42, 42, 0.2); }
-        }
-
-        @keyframes flash-2 {
-            0%, 100% { background: #ffd700; box-shadow: 0px 5px 24px 3px #ffd700; }
-            50% { background: rgba(255, 215, 0, 0.4); box-shadow: 0px 5px 24px 3px rgba(255, 215, 0, 0.2); }
-        }
-
-        @keyframes flash-3 {
-            0%, 100% { background: #00e676; box-shadow: 0px 5px 24px 3px #00e676; }
-            50% { background: rgba(0, 230, 118, 0.4); box-shadow: 0px 5px 24px 3px rgba(0, 230, 118, 0.2); }
-        }
-
-        /* Pulse for Gift Button */
-        @keyframes gentle-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.04); }
-        }
-        .pulse-btn {
-            animation: gentle-pulse 2.5s infinite ease-in-out;
-        }
-    </style>
-</head>
-
-<body class="h-full flex flex-col justify-between items-center relative min-h-screen select-none">
-
-    <canvas id="snow-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
-
-    <ul class="lightrope" id="lightrope">
-        <!-- Generated by JS -->
-    </ul>
-
-    <header class="w-full max-w-6xl px-4 pt-12 pb-4 z-20 flex justify-between items-center">
-        <div class="flex items-center space-x-2 bg-emerald-950/60 backdrop-blur-md px-4 py-2 rounded-full border border-emerald-500/30 text-xs sm:text-sm text-emerald-300">
-            <i class="fa-solid fa-tree text-amber-400 animate-pulse"></i>
-            <span>Natal 2026</span>
-        </div>
-
-        <!-- Music Toggle Button -->
-        <button id="music-btn" class="flex items-center space-x-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 px-4 py-2 rounded-full transition-all duration-300 cursor-pointer active:scale-95 text-xs sm:text-sm shadow-lg">
-            <i id="music-icon" class="fa-solid fa-music"></i>
-            <span id="music-text">Música de Natal</span>
-        </button>
-    </header>
-
-    <main class="w-full max-w-5xl px-4 my-auto z-10 flex flex-col items-center text-center">
-        
-        <!-- Header Titles -->
-        <div class="space-y-3 mb-8 sm:mb-12">
-            <p class="text-emerald-400 uppercase tracking-[0.25em] text-xs sm:text-sm font-semibold">
-                Contagem Regressiva Especial
-            </p>
-            <h1 class="title-font text-5xl sm:text-7xl md:text-8xl gold-gradient-text tracking-wide drop-shadow-md">
-                A Magia do Natal
-            </h1>
-            <p class="text-gray-300 max-w-lg mx-auto text-sm sm:text-base font-light px-4">
-                Sinta o encanto, a união e a esperança da época mais abençoada do ano se aproximando.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 w-full max-w-4xl mb-10 sm:mb-14">
-            
-            <!-- Dias -->
-            <div class="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center transition-all duration-300">
-                <span id="days" class="number-font text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-1">00</span>
-                <div class="flex items-center space-x-1.5 text-xs sm:text-sm uppercase tracking-wider font-semibold text-amber-400">
-                    <i class="fa-solid fa-calendar-day text-[10px]"></i>
-                    <span>Dias</span>
-                </div>
-            </div>
-
-            <!-- Horas -->
-            <div class="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center transition-all duration-300">
-                <span id="hours" class="number-font text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-1">00</span>
-                <div class="flex items-center space-x-1.5 text-xs sm:text-sm uppercase tracking-wider font-semibold text-amber-400">
-                    <i class="fa-solid fa-clock text-[10px]"></i>
-                    <span>Horas</span>
-                </div>
-            </div>
-
-            <!-- Minutos -->
-            <div class="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center transition-all duration-300">
-                <span id="minutes" class="number-font text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-1">00</span>
-                <div class="flex items-center space-x-1.5 text-xs sm:text-sm uppercase tracking-wider font-semibold text-amber-400">
-                    <i class="fa-solid fa-hourglass-half text-[10px]"></i>
-                    <span>Minutos</span>
-                </div>
-            </div>
-
-            <!-- Segundos -->
-            <div class="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center transition-all duration-300">
-                <span id="seconds" class="number-font text-4xl sm:text-6xl md:text-7xl font-bold text-rose-400 mb-1">00</span>
-                <div class="flex items-center space-x-1.5 text-xs sm:text-sm uppercase tracking-wider font-semibold text-rose-400">
-                    <i class="fa-solid fa-bolt text-[10px]"></i>
-                    <span>Segundos</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
-            <button id="open-gift-btn" class="pulse-btn w-full sm:w-auto flex-1 flex items-center justify-center space-x-3 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-semibold py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-red-900/50 transition-all duration-300 border border-rose-400/40 cursor-pointer text-sm sm:text-base">
-                <i class="fa-solid fa-gift text-lg text-amber-300 animate-bounce"></i>
-                <span>Abrir Presente Surpresa</span>
-            </button>
-        </div>
-
-    </main>
-
-    <footer class="w-full max-w-6xl px-4 py-6 z-20 text-center text-xs sm:text-sm text-emerald-300/70 border-t border-emerald-900/50 mt-8">
-        <p class="flex items-center justify-center gap-2">
-            <span>Desenvolvido com carinho para celebrar o Natal</span>
-            <i class="fa-solid fa-heart text-red-500 text-xs"></i>
-        </p>
-    </footer>
-
-    <div id="gift-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
-        <div id="modal-card" class="glass-card bg-gradient-to-b from-emerald-900/90 to-emerald-950/90 border border-amber-400/50 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center transform scale-90 transition-all duration-300 relative shadow-2xl">
-            
-            <!-- Close Button -->
-            <button id="close-modal-btn" class="absolute top-4 right-4 text-emerald-300/70 hover:text-white text-lg w-8 h-8 rounded-full bg-emerald-950/50 flex items-center justify-center border border-emerald-500/20 cursor-pointer">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="w-16 h-16 mx-auto mb-4 bg-amber-500/20 rounded-full border border-amber-400/40 flex items-center justify-center text-amber-300 text-2xl">
-                <i class="fa-solid fa-star"></i>
-            </div>
-
-            <h3 class="title-font text-3xl text-amber-300 mb-3">Mensagem do Dia</h3>
-            
-            <p id="gift-quote" class="text-gray-200 text-sm sm:text-base leading-relaxed italic mb-6">
-                "Que a paz e a esperança do Natal iluminem o seu caminho e tragam momentos inesquecíveis para você e sua família."
-            </p>
-
-            <div class="flex flex-col gap-2">
-                <button id="another-quote-btn" class="w-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 py-2.5 rounded-xl font-medium transition-all cursor-pointer text-sm">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> Outra Mensagem
-                </button>
-                <button id="close-modal-btn-2" class="w-full bg-emerald-800/40 hover:bg-emerald-800/60 text-emerald-200 py-2.5 rounded-xl font-medium transition-all cursor-pointer text-sm">
-                    Fechar
-                </button>
-            </div>
-        </div>
+  <section class="gift-zone" aria-labelledby="giftTitle">
+    <h2 class="gift-title" id="giftTitle">Presente surpresa</h2>
+    <p class="gift-hint">Toque na caixa para ver o que veio dentro.</p>
+    <div class="gift-stage" id="giftStage">
+      <button class="gift" id="giftBtn" type="button" aria-label="Abrir presente surpresa">
+        <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+          <defs>
+            <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#f0c35a" stop-opacity=".85"/>
+              <stop offset="1" stop-color="#f0c35a" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle class="glow" cx="60" cy="54" r="54" fill="url(#glowGrad)"/>
+          <rect x="22" y="58" width="76" height="54" rx="4" fill="#d9504b"/>
+          <rect x="54" y="58" width="12" height="54" fill="#f0c35a"/>
+          <rect x="22" y="100" width="76" height="12" rx="4" fill="#a9332f" opacity=".45"/>
+          <g class="lid">
+            <rect x="16" y="42" width="88" height="18" rx="4" fill="#e8625c"/>
+            <rect x="54" y="42" width="12" height="18" fill="#f0c35a"/>
+            <ellipse cx="47" cy="34" rx="13" ry="8" transform="rotate(-24 47 34)" fill="#f0c35a"/>
+            <ellipse cx="73" cy="34" rx="13" ry="8" transform="rotate(24 73 34)" fill="#f0c35a"/>
+            <circle cx="60" cy="38" r="6" fill="#d19a2a"/>
+          </g>
+        </svg>
+      </button>
     </div>
+    <p class="phrase" id="phrase" aria-live="polite">Sua surpresa aparece aqui.</p>
+    <p class="gift-count" id="giftCount">Presentes abertos: 0</p>
+  </section>
 
-    <script>
-        // --- 1. Top Christmas String Lights Generator ---
-        const lightrope = document.getElementById('lightrope');
-        const bulbCount = Math.floor(window.innerWidth / 35);
-        for (let i = 0; i < bulbCount; i++) {
-            const li = document.createElement('li');
-            lightrope.appendChild(li);
-        }
+  <div class="radio">
+    <button class="switch" id="musicBtn" type="button" role="switch" aria-checked="false" aria-label="Música de fundo"></button>
+    <div class="radio-text">
+      <p class="radio-title">Música de fundo</p>
+      <p class="radio-status" id="musicStatus" aria-live="polite">Desligada</p>
+    </div>
+    <button class="next" id="nextBtn" type="button">Próxima música</button>
+  </div>
+</main>
 
-        // --- 2. Precision Christmas Countdown Timer ---
-        function updateCountdown() {
-            const now = new Date();
-            let currentYear = now.getFullYear();
-            
-            // Christmas Date (Month 11 = December)
-            let christmasDate = new Date(currentYear, 11, 25, 0, 0, 0);
+<div class="strand" id="lightsBottom" aria-hidden="true"></div>
 
-            // If Christmas has passed this year, count for next year
-            if (now > christmasDate) {
-                christmasDate = new Date(currentYear + 1, 11, 25, 0, 0, 0);
-            }
+<script>
+(function(){
+  /* ============ luzes ============ */
+  function buildStrand(el, count){
+    var colors = ['#d9504b','#f0c35a','#2f8f5b','#6bb6e6','#f0c35a'];
+    var w = 900, h = 46, ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 '+w+' '+h);
+    var pts = [];
+    for(var i=0;i<=count;i++){
+      var x = (w/count)*i;
+      var y = 6 + Math.sin((i/count)*Math.PI*3)*10 + 14;
+      pts.push(x.toFixed(1)+','+y.toFixed(1));
+    }
+    var wire = document.createElementNS(ns,'path');
+    wire.setAttribute('d','M '+pts.join(' L '));
+    wire.setAttribute('stroke','#2a465e');
+    wire.setAttribute('stroke-width','2');
+    wire.setAttribute('fill','none');
+    svg.appendChild(wire);
+    for(var j=0;j<count;j++){
+      var cx = (w/count)*(j+0.5);
+      var cy = 6 + Math.sin(((j+0.5)/count)*Math.PI*3)*10 + 14 + 7;
+      var c = colors[j % colors.length];
+      var b = document.createElementNS(ns,'circle');
+      b.setAttribute('cx',cx.toFixed(1));
+      b.setAttribute('cy',cy.toFixed(1));
+      b.setAttribute('r','6');
+      b.setAttribute('fill',c);
+      b.setAttribute('class','bulb');
+      b.style.color = c;
+      svg.appendChild(b);
+    }
+    el.appendChild(svg);
+  }
+  buildStrand(document.getElementById('lightsTop'), 17);
+  buildStrand(document.getElementById('lightsBottom'), 17);
 
-            const diff = christmasDate - now;
+  /* ============ contagem ============ */
+  var ddEl=document.getElementById('dd'), hhEl=document.getElementById('hh'),
+      mmEl=document.getElementById('mm'), ssEl=document.getElementById('ss'),
+      clockEl=document.getElementById('clock'),
+      arrivedEl=document.getElementById('arrived');
+  function pad(n){ return String(n).padStart(2,'0'); }
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  function tick(){
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var year = now.getFullYear();
+    var xmas = new Date(year, 11, 25);
+    if (today > xmas){ year++; xmas = new Date(year, 11, 25); }
 
-            document.getElementById('days').innerText = days.toString().padStart(2, '0');
-            document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
-            document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
-            document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
+    /* no dia 25 a contagem termina e aparece a mensagem de Natal */
+    if (today >= xmas){
+      clockEl.hidden = true; arrivedEl.hidden = false;
+      return;
+    }
+    clockEl.hidden = false; arrivedEl.hidden = true;
 
-            // Trigger confetti if exactly Christmas morning!
-            if (diff <= 1000 && diff > 0) {
-                triggerConfetti();
-            }
-        }
+    /* contagem exata até 00:00 de 25/12 */
+    var exact = Math.floor((xmas - now) / 1000);
+    ddEl.textContent = pad(Math.floor(exact / 86400));
+    hhEl.textContent = pad(Math.floor((exact % 86400) / 3600));
+    mmEl.textContent = pad(Math.floor((exact % 3600) / 60));
+    ssEl.textContent = pad(exact % 60);
+  }
+  tick();
+  setInterval(tick, 1000);
 
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
+  /* ============ presente surpresa ============ */
+  var PHRASES = [
+    "Que a sua noite seja calma, cheia de luz e de gente querida por perto.",
+    "Natal bom é aquele em que sobra abraço e falta pressa.",
+    "Hoje você ganhou um bônus: um minuto de silêncio só para respirar fundo e sorrir.",
+    "Noite Feliz foi tocada pela primeira vez em 1818, numa igreja da Áustria, com violão.",
+    "Pisca-pisca enrolado: o único presente que ninguém pediu, mas aparece todo ano.",
+    "Que a mesa esteja farta, o coração leve e a sobremesa sem fila.",
+    "Os cartões de Natal comerciais surgiram na Inglaterra, em 1843. Que tal mandar um, de papel ou de mensagem?",
+    "A poinsétia, a flor-de-natal, é originária do México e fica vermelha nesta época do ano.",
+    "Presente bom nem sempre cabe em caixa: uma ligação também embrulha carinho.",
+    "Em 1882, um colaborador de Thomas Edison enfeitou uma árvore com luzinhas elétricas pela primeira vez.",
+    "Que você receba tudo o que deseja e perceba que já tinha boa parte.",
+    "Panetone com ou sem frutas cristalizadas? Esse é um debate que não precisa de vencedor.",
+    "Agradeça a quem trabalha enquanto o resto do mundo celebra.",
+    "O melhor enfeite é aquele que alguém pendurou torto, mas com carinho.",
+    "Neste Natal: menos pressa, mais café, mais conversa.",
+    "Que cada luzinha acesa lembre alguém que você ama, perto ou longe.",
+    "Dizer “obrigado” é um presente que cabe em qualquer bolso e nunca sai de moda.",
+    "Que não falte colo, nem prato quente, nem alguém para rir das suas piadas ruins.",
+    "Na noite de Natal de 1914, soldados de lados opostos da Primeira Guerra silenciaram as armas em vários pontos do front.",
+    "O Natal cabe num abraço apertado, numa mesa cheia ou numa mensagem enviada na hora certa.",
+    "Dica de ouro: o segredo do peru macio é paciência. O da vida também.",
+    "Se perguntarem pelo seu presente, diga que é a sua presença. Depois olhe discretamente a pilha de caixas.",
+    "Que a esperança seja a primeira luz acesa e a última a se apagar.",
+    "Hoje vale repetir a sobremesa, perdoar o tio das piadas e abraçar quem mais precisa.",
+    "Dizem que o Natal é para as crianças. Por sorte, todos nós já fomos uma.",
+    "Que você encontre, nesta época, um tempinho só seu.",
+    "Carta ao Papai Noel: “Pode pular a chaminé, a porta de casa está aberta para você.”",
+    "Cuidar de quem está sozinho no Natal é o melhor enfeite que existe.",
+    "Que a paz seja o prato principal e a alegria, a sobremesa.",
+    "O cheirinho de canela no ar já é meio caminho andado para ser feliz.",
+    "Feliz Natal! Que o Wi-Fi da sua família seja fraco o bastante para todo mundo conversar.",
+    "A tradição de enfeitar um pinheiro em casa já existia na Alemanha no século XVI.",
+    "Fazer silêncio por um minuto também é uma forma de celebrar.",
+    "Se hoje foi corrido, respire: o Natal acontece no coração, não na lista de compras.",
+    "Que a sua casa tenha mais luz do que o pisca-pisca e mais calor do que a lareira.",
+    "Quando a vida embolar, lembre do pisca-pisca: com paciência, o nó sai.",
+    "Que o ano novo comece leve, com menos arrependimentos e mais ideias boas.",
+    "Escreva hoje uma mensagem para alguém com quem você não fala há tempos. O Natal ajuda.",
+    "Ho ho ho! Essa é a risada de quem dormiu bem. Tente.",
+    "Um bom amigo-secreto é aquele que acerta o presente e erra o disfarce.",
+    "Que haja rabanada suficiente para todos e ninguém precise contar quantas você comeu.",
+    "Natal é a época de lembrar que dá para ser gentil de graça.",
+    "O presente mais bonito que existe é tempo com quem a gente gosta."
+  ];
+  var giftBtn = document.getElementById('giftBtn');
+  var giftStage = document.getElementById('giftStage');
+  var phraseEl = document.getElementById('phrase');
+  var giftCountEl = document.getElementById('giftCount');
+  var opened = 0, bag = [], lastIdx = -1;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  function nextPhraseIndex(){
+    if (!bag.length){
+      for (var i=0;i<PHRASES.length;i++) bag.push(i);
+      for (var k=bag.length-1;k>0;k--){
+        var r = Math.floor(Math.random()*(k+1));
+        var t = bag[k]; bag[k] = bag[r]; bag[r] = t;
+      }
+      if (bag[bag.length-1] === lastIdx){ var s = bag[0]; bag[0] = bag[bag.length-1]; bag[bag.length-1] = s; }
+    }
+    lastIdx = bag.pop();
+    return lastIdx;
+  }
+  function sparkles(){
+    if (reduce) return;
+    var colors = ['#f0c35a','#d9504b','#6bb6e6','#2f8f5b','#eaf3f1'];
+    for (var i=0;i<16;i++){
+      var s = document.createElement('i');
+      s.className = 'spark';
+      var ang = (Math.PI*2/16)*i + Math.random()*0.4;
+      var dist = 50 + Math.random()*46;
+      s.style.setProperty('--dx', (Math.cos(ang)*dist).toFixed(0)+'px');
+      s.style.setProperty('--dy', (Math.sin(ang)*dist - 14).toFixed(0)+'px');
+      s.style.background = colors[i % colors.length];
+      giftStage.appendChild(s);
+      (function(n){ setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 950); })(s);
+    }
+  }
+  giftBtn.addEventListener('click', function(){
+    giftBtn.classList.remove('open','wiggle');
+    void giftBtn.offsetWidth;
+    giftBtn.classList.add('open');
+    if (!reduce) giftBtn.classList.add('wiggle');
+    phraseEl.textContent = PHRASES[nextPhraseIndex()];
+    phraseEl.classList.remove('is-new');
+    void phraseEl.offsetWidth;
+    phraseEl.classList.add('is-new');
+    opened++;
+    giftCountEl.textContent = 'Presentes abertos: ' + opened;
+    giftBtn.setAttribute('aria-label','Abrir outro presente surpresa');
+    sparkles();
+  });
 
-        // --- 3. Interactive Falling Snow & Bokeh Canvas Effect ---
-        const canvas = document.getElementById('snow-canvas');
-        const ctx = canvas.getContext('2d');
+  /* ============ música: caixinha de música e chiptune, estilo pisca-pisca ============ */
+  var SEMI = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+  function freq(name){
+    if (name === 'R') return 0;
+    var m = /^([A-G])([#b]?)(\d)$/.exec(name);
+    var midi = 12*(parseInt(m[3],10)+1) + SEMI[m[1]] + (m[2]==='#'?1:(m[2]==='b'?-1:0));
+    return 440*Math.pow(2,(midi-69)/12);
+  }
+  function parse(str, bpm){
+    var beat = 60/bpm;
+    return str.trim().split(/\s+/).filter(function(t){ return t !== '|'; }).map(function(tok){
+      var p = tok.split(':');
+      return { f:freq(p[0]), d:parseFloat(p[1])*beat };
+    });
+  }
 
-        let width, height;
-        let snowflakes = [];
-        let bokehParticles = [];
+  var SONGS = [
+    { name:'Bate o Sino (Jingle Bells)', bpm:196, timbre:'chip',
+      notes:'E5:1 E5:1 E5:2 E5:1 E5:1 E5:2 E5:1 G5:1 C5:1.5 D5:.5 E5:4 R:1 ' +
+            'F5:1 F5:1 F5:1.5 F5:.5 F5:1 E5:1 E5:1 E5:.5 E5:.5 E5:1 D5:1 D5:1 E5:1 D5:2 G5:2 R:1 ' +
+            'E5:1 E5:1 E5:2 E5:1 E5:1 E5:2 E5:1 G5:1 C5:1.5 D5:.5 E5:4 R:1 ' +
+            'F5:1 F5:1 F5:1.5 F5:.5 F5:1 E5:1 E5:1 E5:.5 E5:.5 G5:1 G5:1 F5:1 D5:1 C5:4' },
+    { name:'Noite Feliz (Silent Night)', bpm:84, timbre:'box',
+      notes:'G4:1.5 A4:.5 G4:1 E4:3 G4:1.5 A4:.5 G4:1 E4:3 D5:2 D5:1 B4:3 C5:2 C5:1 G4:3 ' +
+            'A4:2 A4:1 C5:1.5 B4:.5 A4:1 G4:1.5 A4:.5 G4:1 E4:3 A4:2 A4:1 C5:1.5 B4:.5 A4:1 G4:1.5 A4:.5 G4:1 E4:3 ' +
+            'D5:2 D5:1 F5:1.5 D5:.5 B4:1 C5:3 E5:3 C5:1 G4:1 E4:1 G4:1.5 F4:.5 D4:1 C4:4' },
+    { name:'Enfeitem os Salões (Deck the Halls)', bpm:176, timbre:'chip',
+      notes:'G5:1.5 F5:.5 E5:1 D5:1 C5:1 D5:1 E5:1 C5:1 D5:.5 E5:.5 F5:.5 D5:.5 E5:1.5 D5:.5 C5:1 B4:1 C5:2 R:1 ' +
+            'G5:1.5 F5:.5 E5:1 D5:1 C5:1 D5:1 E5:1 C5:1 D5:.5 E5:.5 F5:.5 D5:.5 E5:1.5 D5:.5 C5:1 B4:1 C5:4' },
+    { name:'Boas Festas (We Wish You a Merry Christmas)', bpm:168, timbre:'box',
+      notes:'C5:1 F5:1 F5:.5 G5:.5 F5:.5 E5:.5 D5:1 D5:1 D5:1 G5:1 G5:.5 A5:.5 G5:.5 F5:.5 E5:1 C5:1 C5:1 ' +
+            'A5:1 A5:.5 A#5:.5 A5:.5 G5:.5 F5:1 D5:1 C5:.5 C5:.5 D5:1 G5:1 E5:1 F5:3' },
+    { name:'Greensleeves (What Child Is This)', bpm:112, timbre:'soft',
+      notes:'A4:1 C5:2 D5:1 E5:1.5 F5:.5 E5:1 D5:2 B4:1 G4:1.5 A4:.5 B4:1 C5:2 A4:1 A4:1.5 G#4:.5 A4:1 B4:2 G#4:1 E4:3 ' +
+            'A4:1 C5:2 D5:1 E5:1.5 F5:.5 E5:1 D5:2 B4:1 G4:1.5 A4:.5 B4:1 C5:1.5 B4:.5 A4:1 G#4:1.5 F#4:.5 G#4:1 A4:4' }
+  ];
+  SONGS.forEach(function(s){ s.seq = parse(s.notes, s.bpm); });
 
-        function resizeCanvas() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
+  var ctx = null, master = null, nodes = [], timer = null, playing = false, songIdx = 0;
+  var btn = document.getElementById('musicBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var statusEl = document.getElementById('musicStatus');
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        class Snowflake {
-            constructor() {
-                this.reset();
-            }
-
-            reset() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * -height;
-                this.radius = Math.random() * 3 + 1;
-                this.speedY = Math.random() * 1.5 + 0.5;
-                this.speedX = Math.random() * 0.8 - 0.4;
-                this.opacity = Math.random() * 0.6 + 0.3;
-            }
-
-            update() {
-                this.y += this.speedY;
-                this.x += this.speedX + Math.sin(this.y / 40) * 0.3;
-
-                if (this.y > height) {
-                    this.reset();
-                    this.y = -10;
-                }
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                ctx.fill();
-            }
-        }
-
-        class Bokeh {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.radius = Math.random() * 40 + 20;
-                this.speedY = (Math.random() - 0.5) * 0.2;
-                this.opacity = Math.random() * 0.08 + 0.02;
-                this.color = Math.random() > 0.5 ? '255, 215, 0' : '0, 230, 118';
-            }
-
-            update() {
-                this.y += this.speedY;
-                if (this.y < 0) this.y = height;
-                if (this.y > height) this.y = 0;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
-                ctx.fill();
-            }
-        }
-
-        // Generate particles based on screen size
-        const snowCount = Math.min(Math.floor(width / 8), 120);
-        for (let i = 0; i < snowCount; i++) snowflakes.push(new Snowflake());
-        for (let i = 0; i < 15; i++) bokehParticles.push(new Bokeh());
-
-        function animateCanvas() {
-            ctx.clearRect(0, 0, width, height);
-
-            bokehParticles.forEach(b => {
-                b.update();
-                b.draw();
-            });
-
-            snowflakes.forEach(s => {
-                s.update();
-                s.draw();
-            });
-
-            requestAnimationFrame(animateCanvas);
-        }
-
-        animateCanvas();
-
-
-        // --- 4. Web Audio API Synthesizer (Jingle Bells Melody) ---
-        let audioCtx = null;
-        let isPlaying = false;
-        let melodyInterval = null;
-
-        const jingleBellsNotes = [
-            // Note, Duration (ms)
-            { note: 'E4', duration: 250 }, { note: 'E4', duration: 250 }, { note: 'E4', duration: 500 },
-            { note: 'E4', duration: 250 }, { note: 'E4', duration: 250 }, { note: 'E4', duration: 500 },
-            { note: 'E4', duration: 250 }, { note: 'G4', duration: 250 }, { note: 'C4', duration: 350 }, { note: 'D4', duration: 150 },
-            { note: 'E4', duration: 800 },
-            { note: 'F4', duration: 250 }, { note: 'F4', duration: 250 }, { note: 'F4', duration: 350 }, { note: 'F4', duration: 150 },
-            { note: 'F4', duration: 250 }, { note: 'E4', duration: 250 }, { note: 'E4', duration: 250 }, { note: 'E4', duration: 150 }, { note: 'E4', duration: 150 },
-            { note: 'E4', duration: 250 }, { note: 'D4', duration: 250 }, { note: 'D4', duration: 250 }, { note: 'E4', duration: 250 },
-            { note: 'D4', duration: 500 }, { note: 'G4', duration: 500 }
-        ];
-
-        const noteFrequencies = {
-            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00
-        };
-
-        function playTone(freq, duration) {
-            if (!audioCtx) return;
-
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            // Warm bell-like sound using sine + harmonic blend
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration / 1000));
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + (duration / 1000));
-        }
-
-        function startMusic() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-
-            let noteIndex = 0;
-            isPlaying = true;
-
-            function playNextNote() {
-                if (!isPlaying) return;
-                const current = jingleBellsNotes[noteIndex];
-                playTone(noteFrequencies[current.note], current.duration);
-
-                noteIndex = (noteIndex + 1) % jingleBellsNotes.length;
-                melodyInterval = setTimeout(playNextNote, current.duration + 50);
-            }
-
-            playNextNote();
-            
-            document.getElementById('music-icon').className = 'fa-solid fa-volume-high text-green-400 animate-pulse';
-            document.getElementById('music-text').innerText = 'Tocando Música';
-        }
-
-        function stopMusic() {
-            isPlaying = false;
-            if (melodyInterval) clearTimeout(melodyInterval);
-            document.getElementById('music-icon').className = 'fa-solid fa-music';
-            document.getElementById('music-text').innerText = 'Música de Natal';
-        }
-
-        document.getElementById('music-btn').addEventListener('click', () => {
-            if (isPlaying) {
-                stopMusic();
-            } else {
-                startMusic();
-            }
-        });
-
-
-        // --- 5. Interactive Gift Modal & Inspirational Quotes ---
-        const christmasQuotes = [
-            "Que a luz do Natal ilumine o seu lar com paz, saúde, harmonia e muito amor!",
-            "O maior presente de Natal é a presença daqueles que amamos ao nosso lado.",
-            "Que a magia deste Natal transforme todos os seus sonhos em realidade!",
-            "Natal é tempo de renovação, perdão, esperança e gratidão pelas bênçãos do ano.",
-            "Que o espírito natalino traga sorrisos sinceros e aconchego ao seu coração.",
-            "A melhor mensagem de Natal é aquela que sai em silêncio do nosso coração e aquece com carinho a vida de quem amamos.",
-            "Que a estrela de Natal brilhe forte na sua vida durante todo o ano que vai chegar!"
-        ];
-
-        const giftModal = document.getElementById('gift-modal');
-        const modalCard = document.getElementById('modal-card');
-        const giftQuote = document.getElementById('gift-quote');
-
-        function triggerConfetti() {
-            if (typeof confetti === 'function') {
-                confetti({
-                    particleCount: 80,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#ffd700', '#e63946', '#2a9d8f', '#ffffff']
-                });
-            }
-        }
-
-        function openModal() {
-            showRandomQuote();
-            giftModal.classList.remove('opacity-0', 'pointer-events-none');
-            modalCard.classList.remove('scale-90');
-            modalCard.classList.add('scale-100');
-            triggerConfetti();
-        }
-
-        function closeModal() {
-            giftModal.classList.add('opacity-0', 'pointer-events-none');
-            modalCard.classList.remove('scale-100');
-            modalCard.classList.add('scale-90');
-        }
-
-        function showRandomQuote() {
-            const randomIndex = Math.floor(Math.random() * christmasQuotes.length);
-            giftQuote.innerText = `"${christmasQuotes[randomIndex]}"`;
-        }
-
-        document.getElementById('open-gift-btn').addEventListener('click', openModal);
-        document.getElementById('close-modal-btn').addEventListener('click', closeModal);
-        document.getElementById('close-modal-btn-2').addEventListener('click', closeModal);
-        document.getElementById('another-quote-btn').addEventListener('click', () => {
-            showRandomQuote();
-            triggerConfetti();
-        });
-
-        giftModal.addEventListener('click', (e) => {
-            if (e.target === giftModal) closeModal();
-        });
-    </script>
-</body>
-</html>
+  function ensureCtx(){
+    if (!ctx){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+    }
+    return ctx;
+  }
+  function tone(f, dur, when, timbre){
+    var o1 = ctx.createOscillator(), o2 = null;
+    var g = ctx.createGain(), lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    var peak, attack, end;
+    if (timbre === 'chip'){
+      o1.type = 'square'; lp.frequency.value = 3200; peak = 0.05; attack = 0.008; end = dur*0.9;
+    } else if (timbre === 'soft'){
+      o1.type = 'triangle'; o2 = ctx.createOscillator(); o2.type = 'sine';
+      lp.frequency.value = 2200; peak = 0.14; attack = 0.03; end = dur*1.05;
+    } else {
+      o1.type = 'triangle'; o2 = ctx.createOscillator(); o2.type = 'sine';
+      lp.frequency.value = 3000; peak = 0.15; attack = 0.012; end = Math.min(Math.max(dur*1.5, 0.45), 1.3);
+    }
+    o1.frequency.value = f;
+    if (o2) o2.frequency.value = f*2;
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(peak, when + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + end);
+    o1.connect(lp); if (o2) o2.connect(lp);
+    lp.connect(g); g.connect(master);
+    o1.start(when); o1.stop(when + end + 0.05);
+    nodes.push(o1);
+    if (o2){ o2.start(when); o2.stop(when + end + 0.05); nodes.push(o2); }
+  }
+  function silence(){
+    clearTimeout(timer); timer = null;
+    if (ctx && master){
+      var m = master, now = ctx.currentTime;
+      try { m.gain.cancelScheduledValues(now); m.gain.setTargetAtTime(0, now, 0.02); } catch(e){}
+      nodes.forEach(function(o){ try { o.stop(now + 0.1); } catch(e){} });
+      setTimeout(function(){ try { m.disconnect(); } catch(e){} }, 250);
+    }
+    nodes = []; master = null;
+  }
+  function playTrack(){
+    if (!playing) return;
+    var c = ensureCtx();
+    if (!c){ setPlaying(false); statusEl.textContent = 'Seu navegador não toca áudio por aqui'; return; }
+    if (c.state === 'suspended') c.resume();
+    silence();
+    master = c.createGain();
+    master.gain.value = 0.9;
+    master.connect(c.destination);
+    var song = SONGS[songIdx];
+    var t = c.currentTime + 0.08;
+    song.seq.forEach(function(n){
+      if (n.f) tone(n.f, n.d, t, song.timbre);
+      t += n.d;
+    });
+    var ms = (t - c.currentTime)*1000 + 900;
+    timer = setTimeout(function(){ songIdx = (songIdx + 1) % SONGS.length; playTrack(); }, ms);
+    updateStatus();
+  }
+  function updateStatus(){
+    statusEl.textContent = playing
+      ? 'Tocando: ' + SONGS[songIdx].name
+      : 'Desligada · ' + SONGS.length + ' clássicos instrumentais';
+  }
+  function setPlaying(on){
+    playing = on;
+    btn.setAttribute('aria-checked', on ? 'true' : 'false');
+    if (on){ playTrack(); } else { silence(); updateStatus(); }
+  }
+  btn.addEventListener('click', function(){ setPlaying(!playing); });
+  nextBtn.addEventListener('click', function(){
+    songIdx = (songIdx + 1) % SONGS.length;
+    if (playing){ playTrack(); }
+    else { statusEl.textContent = 'Desligada · próxima faixa: ' + SONGS[songIdx].name; }
+  });
+  updateStatus();
+})();
+</script>
